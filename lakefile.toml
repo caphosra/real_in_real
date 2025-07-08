@@ -1,0 +1,6 @@
+name = "real_in_real"
+version = "0.1.0"
+defaultTargets = ["real_in_real"]
+
+[[lean_lib]]
+name = "RealInReal"
