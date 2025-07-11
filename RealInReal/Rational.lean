@@ -6,12 +6,6 @@ structure NumPair where
 
   denom_non_zero: denom ≠ 0
 
-instance : LE NumPair where
-  le a b := a.num * b.denom ≤ b.num * a.denom
-
-instance : LT NumPair where
-  lt a b := a.num * b.denom < b.num * a.denom
-
 instance NumPairSetoid : Setoid NumPair where
   r := fun a b => a.num * b.denom = b.num * a.denom
   iseqv := by
@@ -61,3 +55,67 @@ instance NumPairSetoid : Setoid NumPair where
       exact this
 
 def Rational := Quotient NumPairSetoid
+
+theorem NumPair.le_universal{a_1 a_2 b_1 b_2: NumPair}:
+    a_1 ≈ a_2
+      → b_1 ≈ b_2
+      → a_1.num * ↑b_1.denom ≤ b_1.num * ↑a_1.denom
+      → a_2.num * ↑b_2.denom ≤ b_2.num * ↑a_2.denom := by
+  intros a_eq b_eq
+  intros h
+  have: (↑a_2.denom: Int) ≥ 0 := by
+    simp
+  let h' := Int.mul_le_mul_of_nonneg_right h this
+  conv at h' =>
+    lhs
+    rw [Int.mul_right_comm]
+    lhs
+    rw [a_eq]
+  conv at h' =>
+    congr
+    case a =>
+      rw [Int.mul_right_comm]
+    case a =>
+      rw [Int.mul_right_comm]
+  have: (↑a_1.denom: Int) > 0 := by
+    simp
+    exact Nat.zero_lt_of_ne_zero a_1.denom_non_zero
+  let h'' := Int.le_of_mul_le_mul_right h' this
+  have: (↑b_2.denom: Int) ≥ 0 := by
+    simp
+  let h''' := Int.mul_le_mul_of_nonneg_right h'' this
+  conv at h''' =>
+    rhs
+    rw [Int.mul_right_comm]
+    lhs
+    rw [b_eq]
+  conv at h''' =>
+    congr
+    case a =>
+      rw [Int.mul_right_comm]
+    case a =>
+      rw [Int.mul_right_comm]
+  have: (↑b_1.denom: Int) > 0 := by
+    simp
+    exact Nat.zero_lt_of_ne_zero b_1.denom_non_zero
+  exact Int.le_of_mul_le_mul_right h''' this
+
+def Rational.le (a b: Rational): Prop :=
+  Quotient.liftOn₂ a b (fun x y => x.num * y.denom ≤ y.num * x.denom)
+  (
+    by
+      intros a_1 b_1 a_2 b_2 a_eq b_eq
+      simp
+      constructor
+      case mp =>
+        exact NumPair.le_universal a_eq b_eq
+      case mpr =>
+        have a_eq': a_2 ≈ a_1 := by
+          exact NumPairSetoid.symm a_eq
+        have b_eq': b_2 ≈ b_1 := by
+          exact NumPairSetoid.symm b_eq
+        exact NumPair.le_universal a_eq' b_eq'
+  )
+
+instance RationalLE : LE Rational where
+  le := Rational.le
