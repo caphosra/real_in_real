@@ -119,3 +119,6 @@ def Rational.le (a b: Rational): Prop :=
 
 instance RationalLE : LE Rational where
   le := Rational.le
+
+instance RationalLT : LT Rational where
+  lt a b := a ≤ b ∧ a ≠ b

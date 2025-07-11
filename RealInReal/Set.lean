@@ -2,6 +2,8 @@ def Set α := α → Prop
 
 infixl: 50 "∈" => fun {α: Type}(a: α) (s: Set α) => s a
 
+infixl: 50 "∉" => fun {α: Type}(a: α) (s: Set α) => ¬s a
+
 infixl: 50 "∪" => fun {α: Type}(s_1: Set α) (s_2: Set α) =>
   fun (a: α) => s_1 a ∨ s_2 a
 
